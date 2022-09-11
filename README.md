@@ -1,7 +1,8 @@
-#PokeGuesser
-A "who's that Pokémon?" inspired game, fetching pokemon info from pokeapi.co 
+# PokeGuesser
 
-Under progress. 
+A "who's that Pokémon?" inspired game, fetching pokemon info from pokeapi.co
+
+Under progress.
 
 ## Getting Started with Create React App
 
