@@ -1,6 +1,6 @@
 # PokeGuesser
 
-A "who's that Pokémon?" inspired game, fetching pokemon info from pokeapi.co
+A "who's that Pokémon?" inspired game, fetching pokemon data from pokeapi.co
 
 Under progress.
 
