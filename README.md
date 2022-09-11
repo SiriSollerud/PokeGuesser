@@ -1,4 +1,9 @@
-# Getting Started with Create React App
+#PokeGuesser
+A "who's that Pokémon?" inspired game, fetching pokemon info from pokeapi.co 
+
+Under progress. 
+
+## Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
