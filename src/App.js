@@ -1,5 +1,5 @@
 import "./App.css";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useImmerReducer } from "use-immer";
 
 function myReducer(draft, action) {
@@ -15,6 +15,19 @@ function myReducer(draft, action) {
       draft.nameCollection.push(action.value[0]);
       draft.imgCollection.push(action.value[1]);
       return;
+    case "guessAttempt":
+      console.log(draft.currentQuestion.pokeName);
+      if (action.value === draft.currentQuestion.pokeName) {
+        draft.points++;
+        console.log("CORRECT");
+        //TODO: reveal image
+        draft.answeredCorrectly = true;
+        draft.currentQuestion = generateQuestion();
+      } else {
+        draft.strikes++;
+        console.log("WRONG");
+      }
+      return;
 
     default:
       break;
@@ -27,10 +40,10 @@ function myReducer(draft, action) {
     const randmNumber = Math.floor(Math.random() * (max - min + 1)) + min;
 
     const imgHidden = draft.imgCollection[randmNumber];
-    const answerName = draft.nameCollection[randmNumber];
+    const answer = draft.nameCollection[randmNumber];
     const imgRevealed = draft.imgCollection[randmNumber];
 
-    return { pokeImgQ: imgHidden, pokeName: answerName, imgRevealed };
+    return { pokeImgQ: imgHidden, pokeName: answer, imgRevealed };
   }
 }
 
@@ -43,6 +56,7 @@ const initialState = {
   nameCollection: [],
   currentQuestion: null,
   playing: false,
+  answeredCorrectly: false,
   fetchCount: 0,
 };
 
@@ -55,6 +69,7 @@ function App() {
     pokeMax.push(i);
   }
 
+  //TODO: fix when backspaced??
   let requests = pokeMax.map((pokeMax) =>
     fetch(`https://pokeapi.co/api/v2/pokemon/${pokeMax}`)
   );
@@ -90,17 +105,43 @@ function App() {
     };
   }, []);
 
+  const [guess, setGuess] = useState("");
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      console.log(`guess: ${guess}`);
+      dispatch({ type: "guessAttempt", value: guess });
+    }
+  };
+
   return (
     <div>
       {state.currentQuestion && (
-        //make this a grid instead?
-        <div className="center-screen">
-          <div
-            className="object-none content-center h-96 w-96 bg-cover bg-center brightness-0"
-            style={{
-              backgroundImage: `url(${state.currentQuestion.pokeImgQ})`,
-            }}
-          ></div>
+        // learned to center a div :D
+        <div>
+          <div className="center-screen">
+            <div
+              className="object-none content-center h-96 w-96 bg-cover bg-center brightness-0"
+              style={{
+                backgroundImage: `url(${state.currentQuestion.pokeImgQ})`,
+              }}
+            >
+              {/* {console.log(state.currentQuestion.pokeName)} */}
+            </div>
+          </div>
+          <div className="flex justify-center py-5">
+            <div className="mb-3 xl:w-96">
+              <input
+                type="search"
+                className="form-control block w-full px-3 py-1.5 text-lg font-sans text-gray-400 bg-neutral-800 bg-clip-padding border-2 border-solid border-neutral-700 rounded-lg 
+                transition ease-in-out m-0 dark:text-white focus:border-blue-600 focus:outline-none
+                "
+                placeholder="Who's that Pokemon?"
+                onKeyDown={handleKeyDown}
+                onChange={(event) => setGuess(event.target.value)}
+              />
+            </div>
+          </div>
         </div>
       )}
       {state.playing == false &&
