@@ -2,7 +2,6 @@ import "./App.css";
 import { useEffect } from "react";
 import { useImmerReducer } from "use-immer";
 
-
 function myReducer(draft, action) {
   switch (action.type) {
     case "startPlaying":
@@ -13,7 +12,8 @@ function myReducer(draft, action) {
       draft.currentQuestion = generateQuestion();
       return;
     case "addToCollection":
-      draft.pokeCollection.push(action.value);
+      draft.nameCollection.push(action.value[0]);
+      draft.imgCollection.push(action.value[1]);
       return;
 
     default:
@@ -21,8 +21,16 @@ function myReducer(draft, action) {
   }
 
   function generateQuestion() {
-    const tempRandom = draft.pokeCollection[Math.floor(Math.random()*draft.pokeCollection.length)];
-    return { randmPokemon: "", pokeImg: "", answerName: "" };
+    //maybde att 41:12
+    const min = 0;
+    const max = draft.nameCollection.length;
+    const randmNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+
+    const imgHidden = draft.imgCollection[randmNumber];
+    const answerName = draft.nameCollection[randmNumber];
+    const imgRevealed = draft.imgCollection[randmNumber];
+
+    return { pokeImgQ: imgHidden, pokeName: answerName, imgRevealed };
   }
 }
 
@@ -31,7 +39,8 @@ const initialState = {
   strikes: 0,
   timeRemaining: 0,
   highScore: 0,
-  pokeCollection: [],
+  imgCollection: [],
+  nameCollection: [],
   currentQuestion: null,
   playing: false,
   fetchCount: 0,
@@ -40,7 +49,7 @@ const initialState = {
 function App() {
   const [state, dispatch] = useImmerReducer(myReducer, initialState);
 
-  let pokeMax = [151];
+  let pokeMax = [];
   //let pokemons = []
   for (let i = 1; i <= 151; i++) {
     pokeMax.push(i);
@@ -83,14 +92,30 @@ function App() {
 
   return (
     <div>
-      <p className="text center fixed top-0 bottom-0 left-0 right-0 flex justify-center items-center">
-        <button
-          onClick={() => dispatch({ type: "startPlaying" })}
-          className="text-white bg-gradient-to-b from-emerald-500 to-emerald-600 px-4 py-3 rounded text-2xl font-bold"
-        >
-          Play PokeGuess
-        </button>
-      </p>
+      {state.currentQuestion && (
+        //make this a grid instead?
+        <div className="center-screen">
+          <div
+            className="object-none content-center h-96 w-96 bg-cover bg-center brightness-0"
+            style={{
+              backgroundImage: `url(${state.currentQuestion.pokeImgQ})`,
+            }}
+          ></div>
+        </div>
+      )}
+      {state.playing == false &&
+        Boolean(state.imgCollection.length) &&
+        !state.currentQuestion && (
+          <p className="text center fixed top-0 bottom-0 left-0 right-0 flex justify-center items-center">
+            <button
+              onClick={() => dispatch({ type: "startPlaying" })}
+              className="text-white bg-gradient-to-b from-emerald-500 to-emerald-600 px-4 py-3 rounded text-2xl font-bold"
+            >
+              Play PokeGuess
+            </button>
+          </p>
+        )}
+
       {/* <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png" className="object-scale-down h-96 w-96 brightness-0"></img> */}
     </div>
   );
