@@ -3,7 +3,7 @@
 A "who's that Pokémon?" inspired game, fetching pokemon data from pokeapi.co
 
 Under progress. Current version looks like this:
-![](https://raw.githubusercontent.com/SiriSollerud/PokeGuesser/main/src/assets/poke-guesser15_09_2022.png)
+![](https://raw.githubusercontent.com/SiriSollerud/PokeGuesser/main/src/assets/demo_15_09_22.gif)
 
 ## Getting Started with Create React App
 
