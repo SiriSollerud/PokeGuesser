@@ -15,6 +15,10 @@ function wait(ms) {
 
 function myReducer(draft, action) {
   switch (action.type) {
+    case "sendHighScore":
+      draft.highScore = action.value
+      if (!action.value) draft.highScore = 0
+      return
     case "startPlaying":
       draft.points = 0;
       draft.strikes = 0;
@@ -141,7 +145,7 @@ function App() {
 
   useEffect(() => {
     dispatch({
-      type: "recieveHighScore",
+      type: "sendHighScore",
       value: localStorage.getItem("highscore"),
     });
   }, []);
@@ -253,7 +257,7 @@ function App() {
 
             {/* TODO: if collection is 140/151 at end of turn, next turn will just be 140 as well --> fetch again? */}
             <button onClick={() => dispatch({ type: "startPlaying" })} className="relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800">
-              <span class="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
+              <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
                 Play Again
               </span>
             </button>
