@@ -12,6 +12,7 @@ function myReducer(draft, action) {
       draft.currentQuestion = generateQuestion();
       return;
     case "addToCollection":
+      //console.log(`${action.value[0]}: ${action.value[1]}`);
       draft.nameCollection.push(action.value[0]);
       draft.imgCollection.push(action.value[1]);
       return;
@@ -21,6 +22,7 @@ function myReducer(draft, action) {
         draft.points++;
         console.log("CORRECT");
         //TODO: reveal image
+        // TODO: clear form when generate new question
         draft.answeredCorrectly = true;
         draft.currentQuestion = generateQuestion();
       } else {
@@ -35,6 +37,7 @@ function myReducer(draft, action) {
 
   function generateQuestion() {
     //maybde att 41:12
+    draft.answeredCorrectly = false;
     const min = 0;
     const max = draft.nameCollection.length;
     const randmNumber = Math.floor(Math.random() * (max - min + 1)) + min;
@@ -69,16 +72,16 @@ function App() {
     pokeMax.push(i);
   }
 
-  //TODO: fix when backspaced??
-  let requests = pokeMax.map((pokeMax) =>
-    fetch(`https://pokeapi.co/api/v2/pokemon/${pokeMax}`)
-  );
-
+  // TODO:maybe only call requests once somehow??
   useEffect(() => {
     const requestController = new AbortController();
 
     async function go() {
       try {
+        // this fixed the promise already read error :o
+        let requests = pokeMax.map((pokeMax) =>
+          fetch(`https://pokeapi.co/api/v2/pokemon/${pokeMax}`)
+        );
         Promise.all(requests)
           .then((responses) => {
             return responses;
@@ -111,6 +114,7 @@ function App() {
     if (event.key === "Enter") {
       console.log(`guess: ${guess}`);
       dispatch({ type: "guessAttempt", value: guess });
+      setGuess("");
     }
   };
 
@@ -125,9 +129,7 @@ function App() {
               style={{
                 backgroundImage: `url(${state.currentQuestion.pokeImgQ})`,
               }}
-            >
-              {/* {console.log(state.currentQuestion.pokeName)} */}
-            </div>
+            ></div>
           </div>
           <div className="flex justify-center py-5">
             <div className="mb-3 xl:w-96">
@@ -138,6 +140,7 @@ function App() {
                 "
                 placeholder="Who's that Pokemon?"
                 onKeyDown={handleKeyDown}
+                value={guess}
                 onChange={(event) => setGuess(event.target.value)}
               />
             </div>
@@ -156,8 +159,6 @@ function App() {
             </button>
           </p>
         )}
-
-      {/* <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png" className="object-scale-down h-96 w-96 brightness-0"></img> */}
     </div>
   );
 }
