@@ -4,6 +4,7 @@ import { useImmerReducer } from "use-immer";
 
 let strictReactCount = 0;
 
+// use this to have pokemon answer image reveal for 3 seconds?
 function wait(ms) {
   var start = new Date().getTime();
   var end = start;
@@ -37,15 +38,15 @@ function myReducer(draft, action) {
       // TODO: no more guesses if you've guessed them all - congrats screen?
       if (action.value.toLowerCase() === draft.currentQuestion.pokeName) {
         draft.points++;
-
+        if (draft.points > draft.highScore) draft.highScore = draft.points;
         //TODO: reveal image
         //document.getElementById("pokeImg").className = "object-none content-center h-96 w-96 bg-cover bg-center brightness-100"
-        draft.answeredCorrectly = true
+        draft.answeredCorrectly = true;
         //wait(3000);
         draft.currentQuestion = generateQuestion();
       } else {
         draft.strikes++;
-        draft.answeredCorrectly = false
+        draft.answeredCorrectly = false;
         if (draft.strikes >= 3) {
           draft.playing = false;
         }
@@ -57,10 +58,10 @@ function myReducer(draft, action) {
   }
 
   function generateQuestion() {
-/*     if (document.getElementById("pokeImg") && draft.answeredCorrectly) {
+    /*     if (document.getElementById("pokeImg") && draft.answeredCorrectly) {
       document.getElementById("pokeImg").className = "object-none content-center h-96 w-96 bg-cover bg-center brightness-100"
     } */
-    
+
     const min = 0;
     const max = draft.nameCollection.length;
     const randmNumber = Math.floor(Math.random() * (max - min + 1)) + min;
@@ -139,6 +140,19 @@ function App() {
   }
 
   useEffect(() => {
+    dispatch({
+      type: "recieveHighScore",
+      value: localStorage.getItem("highscore"),
+    });
+  }, []);
+
+  useEffect(() => {
+    if(state.highScore > 0) {
+      localStorage.setItem("highscore", state.highScore)
+    }
+  }, [state.highScore]);
+
+  useEffect(() => {
     // TODO: must be a better way than this crude strictReactCount bs I made up
     if (strictReactCount == 1) {
       const requestController = new AbortController();
@@ -159,7 +173,7 @@ function App() {
     if (event.key === "Enter") {
       console.log(`guess: ${guess}`);
       dispatch({ type: "guessAttempt", value: guess });
-     /*  if (state.answeredCorrectly) {
+      /*  if (state.answeredCorrectly) {
         dispatch({ type: "nextQuestion"});
       } */
       setGuess("");
@@ -184,7 +198,8 @@ function App() {
             })}
           </p>
           <div className="center-screen">
-            <div id="pokeImg"
+            <div
+              id="pokeImg"
               className="object-none content-center h-96 w-96 bg-cover bg-center brightness-0"
               style={{
                 backgroundImage: `url(${state.currentQuestion.pokeImgQ})`,
