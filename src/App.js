@@ -2,6 +2,8 @@ import "./App.css";
 import { useEffect, useState } from "react";
 import { useImmerReducer } from "use-immer";
 
+let strictReactCount = 0;
+
 function myReducer(draft, action) {
   switch (action.type) {
     case "startPlaying":
@@ -12,22 +14,25 @@ function myReducer(draft, action) {
       draft.currentQuestion = generateQuestion();
       return;
     case "addToCollection":
-      //console.log(`${action.value[0]}: ${action.value[1]}`);
+      // TODO: adding  to do do
+      console.log("Adding to collection");
       draft.nameCollection.push(action.value[0]);
       draft.imgCollection.push(action.value[1]);
       return;
     case "guessAttempt":
       console.log(draft.currentQuestion.pokeName);
-      if (action.value === draft.currentQuestion.pokeName) {
+      //fixing issue with poekapi giving nidoran-m and nidoran-f
+      if (draft.currentQuestion.pokeName.includes("nidoran")) {
+        draft.currentQuestion.pokeName = "nidoran";
+      }
+      if (action.value.toLowerCase() === draft.currentQuestion.pokeName) {
         draft.points++;
-        console.log("CORRECT");
         //TODO: reveal image
-        // TODO: clear form when generate new question
         draft.answeredCorrectly = true;
         draft.currentQuestion = generateQuestion();
       } else {
         draft.strikes++;
-        console.log("WRONG");
+        //console.log("WRONG");
       }
       return;
 
@@ -36,17 +41,21 @@ function myReducer(draft, action) {
   }
 
   function generateQuestion() {
-    //maybde att 41:12
+    let count = 1;
+    console.log(`Question ${count}`);
+    count++;
     draft.answeredCorrectly = false;
     const min = 0;
     const max = draft.nameCollection.length;
     const randmNumber = Math.floor(Math.random() * (max - min + 1)) + min;
 
-    const imgHidden = draft.imgCollection[randmNumber];
-    const answer = draft.nameCollection[randmNumber];
-    const imgRevealed = draft.imgCollection[randmNumber];
+    // Splice so that I can remove img from collection and not be asked twice
+    const randomImg = draft.imgCollection.splice(randmNumber, 1)[0];
+    const answer = draft.nameCollection.splice(randmNumber, 1)[0];
 
-    return { pokeImgQ: imgHidden, pokeName: answer, imgRevealed };
+    console.log(`Collection length: ${draft.nameCollection.length}`);
+
+    return { pokeImgQ: randomImg, pokeName: answer };
   }
 }
 
@@ -72,40 +81,47 @@ function App() {
     pokeMax.push(i);
   }
 
-  // TODO:maybe only call requests once somehow??
   useEffect(() => {
-    const requestController = new AbortController();
+    // TODO: must be a better way than this crude strictReactCount bullshit I made up
+    if (strictReactCount > 0) {
+      const requestController = new AbortController();
 
-    async function go() {
-      try {
-        // this fixed the promise already read error :o
-        let requests = pokeMax.map((pokeMax) =>
-          fetch(`https://pokeapi.co/api/v2/pokemon/${pokeMax}`)
-        );
-        Promise.all(requests)
-          .then((responses) => {
-            return responses;
-          })
-          // map array of responses into an array of response.json() to read their content
-          .then((responses) => Promise.all(responses.map((r) => r.json())))
-          // all JSON answers are parsed: "pokemons" is the array of them
-          .then((pokemons) =>
-            pokemons.forEach((pokemon) =>
-              dispatch({
-                type: "addToCollection",
-                value: [pokemon.name, pokemon.sprites.other.home.front_default],
-              })
-            )
+      async function go() {
+        try {
+          // requests used to be outside useEffect, putting it in here
+          // fixed the promise error - wonder why?
+          let requests = pokeMax.map((pokeMax) =>
+            fetch(`https://pokeapi.co/api/v2/pokemon/${pokeMax}`)
           );
-      } catch (error) {
-        console.log(error);
+          Promise.all(requests)
+            .then((responses) => {
+              return responses;
+            })
+            // map array of responses into an array of response.json() to read their content
+            .then((responses) => Promise.all(responses.map((r) => r.json())))
+            // all JSON answers are parsed: "pokemons" is the array of them
+            .then((pokemons) =>
+              pokemons.forEach((pokemon) =>
+                dispatch({
+                  type: "addToCollection",
+                  value: [
+                    pokemon.name,
+                    pokemon.sprites.other.home.front_default,
+                  ],
+                })
+              )
+            );
+        } catch (error) {
+          console.log(error);
+        }
       }
-    }
-    go();
+      go();
 
-    return () => {
-      requestController.abort();
-    };
+      return () => {
+        requestController.abort();
+      };
+    }
+    strictReactCount++;
   }, []);
 
   const [guess, setGuess] = useState("");
@@ -131,6 +147,7 @@ function App() {
               }}
             ></div>
           </div>
+          {/* TODO: add skip button? */}
           <div className="flex justify-center py-5">
             <div className="mb-3 xl:w-96">
               <input
@@ -157,6 +174,7 @@ function App() {
             >
               Play PokeGuess
             </button>
+            {console.log("started!")}
           </p>
         )}
     </div>
