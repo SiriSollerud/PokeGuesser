@@ -16,13 +16,14 @@ function wait(ms) {
 function myReducer(draft, action) {
   switch (action.type) {
     case "sendHighScore":
-      draft.highScore = action.value
-      if (!action.value) draft.highScore = 0
-      return
+      draft.highScore = action.value;
+      if (!action.value) draft.highScore = 0;
+      return;
     case "startPlaying":
       draft.points = 0;
       draft.strikes = 0;
       draft.playing = true;
+      //draft.showAnswer = showAnswer();
       draft.currentQuestion = generateQuestion();
       return;
     case "addToCollection":
@@ -31,6 +32,7 @@ function myReducer(draft, action) {
       draft.imgCollection.push(action.value[1]);
       return;
     case "guessAttempt":
+      //draft.brightness = "brightness-100";
       console.log(draft.currentQuestion.pokeName);
       if (!draft.playing) return;
 
@@ -47,9 +49,11 @@ function myReducer(draft, action) {
         //TODO: reveal image
         //document.getElementById("pokeImg").className = "object-none content-center h-96 w-96 bg-cover bg-center brightness-100"
         draft.answeredCorrectly = true;
-        //wait(3000);
+        //draft.brightness = "brightness-100"
+        //draft.showAnswer = showAnswer();
+        
         draft.currentQuestion = generateQuestion();
-      } 
+      }
       // if wrong answer: +1 strike, then go to next question if not 3 strikes
       else {
         draft.strikes++;
@@ -57,6 +61,8 @@ function myReducer(draft, action) {
         if (draft.strikes >= 3) {
           draft.playing = false;
         }
+        //draft.brightness = "brightness-100"
+        //draft.showAnswer = showAnswer();
         draft.currentQuestion = generateQuestion();
       }
       return;
@@ -65,10 +71,17 @@ function myReducer(draft, action) {
       break;
   }
 
+  function showAnswer() {
+    draft.brightness = "brightness-100";
+    //wait(3000);
+    return {brightness : "brightness-100"};
+  }
+
   function generateQuestion() {
     /*     if (document.getElementById("pokeImg") && draft.answeredCorrectly) {
       document.getElementById("pokeImg").className = "object-none content-center h-96 w-96 bg-cover bg-center brightness-100"
     } */
+    //draft.brightness = "brightness-0";
 
     const min = 0;
     const max = draft.nameCollection.length;
@@ -79,8 +92,10 @@ function myReducer(draft, action) {
     const answer = draft.nameCollection.splice(randmNumber, 1)[0];
 
     console.log(`Collection length: ${draft.nameCollection.length}`);
-
-    return { pokeImgQ: randomImg, pokeName: answer };
+    return {
+      pokeImgQ: randomImg,
+      pokeName: answer,
+    };
   }
 }
 
@@ -93,7 +108,8 @@ const initialState = {
   currentQuestion: null,
   playing: false,
   answeredCorrectly: false,
-  fetchCount: 0,
+  // fetchCount: 0, <- not used
+  brightness: "brightness-0",
 };
 
 // TODO: add feature if guess ALL pokemons?
@@ -208,7 +224,7 @@ function App() {
           <div className="center-screen">
             <div
               id="pokeImg"
-              className="object-none content-center h-96 w-96 bg-cover bg-center brightness-0"
+              className={`object-none content-center h-96 w-96 bg-cover bg-center ${state.brightness}`}
               style={{
                 backgroundImage: `url(${state.currentQuestion.pokeImgQ})`,
               }}
@@ -236,6 +252,7 @@ function App() {
         !state.currentQuestion &&
         dispatch({ type: "startPlaying" })}
 
+      {/* Game Over */}
       {state.strikes >= 3 && state.currentQuestion && (
         <div className="fixed top-0 left-0 bottom-0 right-0 bg-black/70 text-white flex justify-center items-center text-center">
           <div>
@@ -253,14 +270,20 @@ function App() {
                 >
                   <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
                 </svg>
-                <span style={{fontWeight: 'bold'}}>{state.points}</span>
+                <span style={{ fontWeight: "bold" }}>{state.points}</span>
               </span>
             </p>
 
-            <p className="mb-5">HIGH SCORE: <span style={{fontWeight: 'bold'}}>{state.highScore}</span></p>
+            <p className="mb-5">
+              HIGH SCORE:{" "}
+              <span style={{ fontWeight: "bold" }}>{state.highScore}</span>
+            </p>
 
             {/* TODO: if collection is 140/151 at end of turn, next turn will just be 140 as well --> fetch again? */}
-            <button onClick={() => dispatch({ type: "startPlaying" })} className="relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800">
+            <button
+              onClick={() => dispatch({ type: "startPlaying" })}
+              className="relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800"
+            >
               <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
                 Play Again
               </span>
