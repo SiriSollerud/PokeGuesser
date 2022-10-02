@@ -40,6 +40,7 @@ function myReducer(draft, action) {
       }
 
       // TODO: no more guesses if you've guessed them all - congrats screen?
+      // if coorect answer: increase points, update high score if necessary, and go to next quesiton
       if (action.value.toLowerCase() === draft.currentQuestion.pokeName) {
         draft.points++;
         if (draft.points > draft.highScore) draft.highScore = draft.points;
@@ -48,12 +49,15 @@ function myReducer(draft, action) {
         draft.answeredCorrectly = true;
         //wait(3000);
         draft.currentQuestion = generateQuestion();
-      } else {
+      } 
+      // if wrong answer: +1 strike, then go to next question if not 3 strikes
+      else {
         draft.strikes++;
         draft.answeredCorrectly = false;
         if (draft.strikes >= 3) {
           draft.playing = false;
         }
+        draft.currentQuestion = generateQuestion();
       }
       return;
 
